@@ -2,8 +2,10 @@
 // Should be in .env
 import {useState} from "react";
 import {useMutation} from "react-query";
+import {PDFViewer} from "pdf-viewer-reactjs"
+import {Document} from "react-pdf";
 
-const BACKEND_IP = "http://95.217.134.12:4010/create-pdf?apiKey=78684310-850d-427a-8432-4a6487f6dbc4"
+const BACKEND_IP = "http://95.217.134.12:4010"
 const API_KEY = "78684310-850d-427a-8432-4a6487f6dbc4"
 const namespace = BACKEND_IP + `/create-pdf?apiKey=${API_KEY}`
 console.log("namespace", namespace)
@@ -11,6 +13,8 @@ console.log("namespace", namespace)
 
 export default function Home() {
     const [input, setInput] = useState("")
+
+    const [pdfData, setPdfData] = useState(null);
 
     const {mutate, isLoading, isError, isSuccess} = useMutation({
         mutationFn: async (text) => {
@@ -23,20 +27,35 @@ export default function Home() {
             if (!response.ok) {
                 throw new Error("Failed to convert to PDF");
             }
-            console.log('response', response)
-            return response.json(); // Process the response (if needed)
+            const pdfData = await response.blob();
+            console.log('pdfData', pdfData)
+            return pdfData;
         },
+        // onSuccess: (data) => {
+        //     console.log("PDF conversion successful:", data);
+        //     // Handle the successful result here (e.g., store it in state or redirect)
+        // },
     });
 
     const handleSubmit = () => {
         if (input.trim()) {
-            mutate(input); // Trigger the mutation with the input value
+            mutate(input, {
+                onSuccess: (data) => {
+                    setPdfData(data);
+                    console.log('data', data)
+                },
+            });
         }
     };
     return (
         <main className="flex flex-row h-full min-h-screen w-full justify-between p-4">
             <div className="grow max-w-[50%] rounded border border-gray-200 bg-gray-50 shadow-md">
-                This gonna be pdf
+                {/*<PDFViewer*/}
+                {/*    document={{*/}
+                {/*        url: URL.createObjectURL(pdfData),*/}
+                {/*    }}*/}
+                {/*/>*/}
+                <Document file={URL.createObjectURL(pdfData)}></Document>
             </div>
             <div className="flex flex-col justify-center items-center w-[40%] p-6">
                 <label
