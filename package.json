@@ -6,13 +6,17 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "cp -R ./node_modules/pspdfkit/dist/pspdfkit-lib ./public"
   },
   "dependencies": {
+    "@wojtekmaj/react-hooks": "^1.21.0",
     "bulma": "^1.0.2",
     "material-design-icons": "^3.0.1",
     "next": "15.0.3",
     "pdf-viewer-reactjs": "^2.2.3",
+    "pdfjs-dist": "^4.9.124",
+    "pspdfkit": "^2024.8.0",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "react-pdf": "^9.1.1",
