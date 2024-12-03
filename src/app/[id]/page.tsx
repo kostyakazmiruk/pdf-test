@@ -2,6 +2,7 @@
 import {useCallback, useEffect, useState} from "react";
 import {useMutation} from "react-query";
 import useFileHistoryStore from "@/hooks/useFileHistoryStore";
+import {useRouter} from "next/navigation";
 
 // Should be in .env
 const BACKEND_IP = "http://95.217.134.12:4010"
@@ -10,14 +11,15 @@ const API_KEY = "78684310-850d-427a-8432-4a6487f6dbc4"
 const namespace = BACKEND_IP + `/create-pdf?apiKey=${API_KEY}`
 
 
-export default function Home() {
+export default function Page({params}) {
+    const {id} = params;
     const [input, setInput] = useState("")
     const [conversionHistory, setConversionHistory] = useState([]);
     const [pdfData, setPdfData] = useState(null);
 
     useEffect(() => {
-        const history = localStorage.getItem("conversionHistory") || "[]";
-        console.log('history', history)
+        const history = localStorage.getItem(`${id}`);
+        // console.log('history', history)
         setConversionHistory(history);
     }, []);
 
@@ -60,7 +62,7 @@ export default function Home() {
                         console.log('blob', blob)
                         console.log('arrayBuffer', arrayBuffer)
                         console.log('container', container)
-                        localStorage.setItem("conversionHistory", arrayBuffer);
+                        localStorage.setItem(`${id}`, arrayBuffer);
                         console.log('base url', `${window.location.protocol}//${window.location.host}`)
                         if (container && PSPDFKit) {
                             PSPDFKit.unload(container); // Ensure previous instance is unloaded
@@ -93,6 +95,7 @@ export default function Home() {
                 <div id="pdf-container" style={{height: '100vh'}}></div>
             </div>
             <div className="flex flex-col justify-center items-center w-[40%] p-6">
+                {id && (<div>{`This is page: ${id}`}</div>)}
                 <label
                     htmlFor="large-input"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
