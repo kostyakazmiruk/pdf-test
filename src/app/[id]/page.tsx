@@ -1,5 +1,5 @@
 "use client"
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useState, use} from "react";
 import {useMutation} from "react-query";
 import useFileHistoryStore from "@/hooks/useFileHistoryStore";
 import {useRouter} from "next/navigation";
@@ -10,18 +10,68 @@ const API_KEY = "78684310-850d-427a-8432-4a6487f6dbc4"
 // Stays here anyway
 const namespace = BACKEND_IP + `/create-pdf?apiKey=${API_KEY}`
 
+// Helper function to convert ArrayBuffer to Base64
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+}
+
+// Helper function to convert Base64 to ArrayBuffer
+function base64ToArrayBuffer(base64) {
+    const binary = window.atob(base64);
+    const len = binary.length;
+    const buffer = new ArrayBuffer(len);
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return buffer;
+}
+
+// Updated renderPDF function
+const renderPDF = async (id, arrayBuffer) => {
+    const PSPDFKit = await import('pspdfkit');
+    const container = document.getElementById("pdf-container");
+    if (!container) return;
+
+    // Save PDF to localStorage as Base64
+    if (arrayBuffer) {
+        const base64Data = arrayBufferToBase64(arrayBuffer);
+        localStorage.setItem(id, base64Data);
+    }
+
+    // Retrieve Base64 data from localStorage and convert to ArrayBuffer
+    const savedBase64 = localStorage.getItem(id);
+    if (savedBase64) {
+        const savedBuffer = base64ToArrayBuffer(savedBase64);
+        PSPDFKit.unload(container);
+        PSPDFKit.load({
+            container,
+            document: savedBuffer,
+            baseUrl: `${window.location.protocol}//${window.location.host}/`,
+        });
+    }
+};
+
 
 export default function Page({params}) {
-    const {id} = params;
+    const {id} = use(params);
     const [input, setInput] = useState("")
     const [conversionHistory, setConversionHistory] = useState([]);
     const [pdfData, setPdfData] = useState(null);
 
     useEffect(() => {
-        const history = localStorage.getItem(`${id}`);
-        // console.log('history', history)
-        setConversionHistory(history);
-    }, []);
+        // Render PDF if we already have the data in localStorage
+        if (id && localStorage.getItem(id)) {
+            renderPDF(id);
+        }
+    }, [id]);
+
 
     const {mutate, isLoading, isError, isSuccess} = useMutation({
         mutationFn: async (text) => {
@@ -39,45 +89,13 @@ export default function Page({params}) {
             return pdfData;
         },
         onSuccess: (blob) => {
-            console.log("PDF conversion successful:", blob);
-
-            // Convert the Blob to an ArrayBuffer
             const reader = new FileReader();
             reader.onloadend = () => {
                 const arrayBuffer = reader.result;
-
-
-                // const newHistory = [
-                //     ...conversionHistory,
-                //     {document: arrayBuffer, createdAt: new Date()},
-                // ];
-                // localStorage.setItem("conversionHistory", JSON.stringify(newHistory));
-                // setConversionHistory(newHistory);
-
-
-                // Load the PDF using PSPDFKit
                 if (arrayBuffer) {
-                    import('pspdfkit').then((PSPDFKit) => {
-                        const container = document.getElementById("pdf-container");
-                        console.log('blob', blob)
-                        console.log('arrayBuffer', arrayBuffer)
-                        console.log('container', container)
-                        localStorage.setItem(`${id}`, arrayBuffer);
-                        console.log('base url', `${window.location.protocol}//${window.location.host}`)
-                        if (container && PSPDFKit) {
-                            PSPDFKit.unload(container); // Ensure previous instance is unloaded
-                            PSPDFKit.load({
-                                container: container,
-                                document: arrayBuffer, // Pass ArrayBuffer here
-                                baseUrl: `${window.location.protocol}//${window.location.host}/`,
-                            });
-                        }
-                    });
+                    renderPDF(id, arrayBuffer); // Reuse the abstracted function
                 }
             };
-
-
-            // Read the Blob as ArrayBuffer
             reader.readAsArrayBuffer(blob);
         },
     });
