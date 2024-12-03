@@ -1,8 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+Link Loom для показу функціоналу
+https://www.loom.com/share/3b79d42a45d642cd9a46efa1426c1ff9?sid=25d1f68e-1500-420f-b3e6-34c84e4dc055
+
 ## Getting Started
 
 First, run the development server:
+Потрібно скачати всі бібліотеки і завантажити бібіліотеку, яка відображає pdf
+```bash
+npm i
+npm run postinstall
+```
 
 ```bash
 npm run dev
@@ -13,6 +21,14 @@ pnpm dev
 # or
 bun dev
 ```
+
+Структура проєкту, як і у більшості NextJs
+/app
+  /layout.tsx   Тут ми використовуємо sidebar, тому він буде працювати на всіх рівнях додатку
+  /page.tsx   -> localhost:3000/
+  /[id]/page.tsx --> Динамічна сторінка, на якій ми і працюємо.
+  /_components/Sidebar.tsx -- Папка наших компонентів, потрібно _ щоб Nextjs не вважав це за сторінку і не створював route /_components
+/hooks - допоміжні абстракції часто використовуємих хуків
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
