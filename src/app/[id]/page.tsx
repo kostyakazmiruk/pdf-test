@@ -103,28 +103,11 @@ export default function Page({params}) {
     });
 
 
-    // handleRetrieve function
-    const handleRetrieve = () => {
-        // Step 1: Retrieve the Base64 encoded PDF data from localStorage by ID
-        const pdfData = localStorage.getItem(`${id}`);
-
-        if (pdfData) {
-            // Step 2: Decode the Base64 string into raw binary data
-            const byteCharacters = atob(pdfData);  // Decoding base64 to binary string
-            let decodedData = "";
-
-            // Step 3: Convert the binary string into a readable format (string) for input field
-            for (let i = 0; i < byteCharacters.length; i++) {
-                decodedData += String.fromCharCode(byteCharacters.charCodeAt(i)); // Convert each char
-            }
-
-            // Step 4: Set the decoded data as the placeholder in the input
-            setPlaceholder(decodedData);
-        } else {
-            console.error("No PDF data found in localStorage.");
+    const handleSubmit = () => {
+        if (input.trim()) {
+            mutate(input);
         }
     };
-
 
     return (
         <main className="flex flex-row h-full min-h-screen w-full justify-between p-4">
@@ -134,11 +117,7 @@ export default function Page({params}) {
             </div>
             <div className="flex flex-col justify-center items-center w-[40%] p-6">
                 {id && (<div>{`This is page: ${id}`}</div>)}
-                <button type="button"
-                        onClick={() => handleRetrieve()}
-                        className="py-2.5 px-5 me-2 mb-2 mt-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                    PDF intro placeholder
-                </button>
+
                 <label
                     htmlFor="large-input"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
